@@ -46,7 +46,21 @@ export function getVersionDocsDirPath(
 }
 
 /** `[siteDir]/community_versioned_sidebars/version-1.0.0-sidebars.json` */
-export async function getVersionSidebarsPath(
+export function getVersionSidebarsPath(
+  siteDir: string,
+  pluginId: string,
+  versionName: string,
+): string {
+  const sidebarsDir = path.join(
+    siteDir,
+    addPluginIdPrefix(VERSIONED_SIDEBARS_DIR, pluginId),
+  );
+
+  return path.join(sidebarsDir, `version-${versionName}-sidebars.json`);
+}
+
+/** Resolves a versioned sidebar, supporting both `.js` and `.json` files. */
+export async function resolveVersionSidebarsPath(
   siteDir: string,
   pluginId: string,
   versionName: string,
@@ -55,12 +69,13 @@ export async function getVersionSidebarsPath(
     siteDir,
     addPluginIdPrefix(VERSIONED_SIDEBARS_DIR, pluginId),
   );
-  const versionedSidebarBaseName = `version-${versionName}-sidebars`;
 
-  const jsPath = path.join(sidebarsDir, `${versionedSidebarBaseName}.js`);
-  const jsonPath = path.join(sidebarsDir, `${versionedSidebarBaseName}.json`);
+  const baseName = `version-${versionName}-sidebars`;
+  const jsPath = path.join(sidebarsDir, `${baseName}.js`);
 
-  return (await fs.pathExists(jsPath)) ? jsPath : jsonPath;
+  return (await fs.pathExists(jsPath))
+    ? jsPath
+    : getVersionSidebarsPath(siteDir, pluginId, versionName);
 }
 
 export function getDocsDirPathLocalized({
@@ -210,7 +225,11 @@ export async function getVersionMetadataPaths({
     : getVersionDocsDirPath(context.siteDir, options.id, versionName);
   const sidebarFilePath = isCurrent
     ? options.sidebarPath
-    : await getVersionSidebarsPath(context.siteDir, options.id, versionName);
+    : await resolveVersionSidebarsPath(
+        context.siteDir,
+        options.id,
+        versionName,
+      );
 
   if (!(await fs.pathExists(contentPath))) {
     throw new Error(

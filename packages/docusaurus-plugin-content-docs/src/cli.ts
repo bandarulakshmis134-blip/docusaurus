@@ -46,7 +46,7 @@ async function createVersionedSidebarFile({
 
   if (shouldCreateVersionedSidebarFile) {
     await fs.outputFile(
-      await getVersionSidebarsPath(siteDir, pluginId, version),
+      getVersionSidebarsPath(siteDir, pluginId, version),
       `${JSON.stringify(sidebars, null, 2)}\n`,
       'utf8',
     );
