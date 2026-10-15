@@ -59,6 +59,25 @@ async function siteFixture(fixture: string) {
 }
 
 describe('loadVersion', () => {
+  describe('site with JavaScript versioned sidebar', () => {
+    it('loads a versioned sidebar from a JavaScript file', async () => {
+      const {options, context, versions} = await siteFixture('site-js-sidebar');
+
+      const version = versions.find((v) => v.versionName === '1.0.0');
+      expect(version).toBeDefined();
+
+      const loadedVersion = await loadVersion({
+        context,
+        options,
+        versionMetadata: version!,
+        env: 'production',
+      });
+
+      expect(loadedVersion.sidebars).toEqual({
+        docs: [{type: 'doc', id: 'hello'}],
+      });
+    });
+  });
   describe('minimal site', () => {
     it('can load current version', async () => {
       const {options, context, versions} = await siteFixture('site-minimal');
